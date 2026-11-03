@@ -1,39 +1,34 @@
-import telebot
-from telebot import types
+from flask import Flask
+import threading
+import os
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-# --- Apna Bot Token Yaha Dalein ---
-BOT_TOKEN = "9269676119:AAEMoPtmt3OAD8gZFSCnKanOql807jLOu2s"
-bot = telebot.TeleBot(BOT_TOKEN)
+# --- Flask for Render ---
+app = Flask(__name__)
 
-# Sample products
-products = {
-    "1": {"name": "T-Shirt", "price": "₹499"},
-    "2": {"name": "Shoes", "price": "₹1299"},
-    "3": {"name": "Watch", "price": "₹1999"},
-}
+@app.route('/')
+def home():
+    return "Bot is Live!"
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("🛍️ Products Dekho", "📞 Contact")
-    bot.send_message(message.chat.id, f"Welcome to Selling Bot! 👋\nApna product choose karo:", reply_markup=markup)
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
-@bot.message_handler(func=lambda m: m.text == "🛍️ Products Dekho")
-def show_products(message):
-    text = "Hamare Products:\n\n"
-    for k, v in products.items():
-        text += f"{k}. {v['name']} - {v['price']}\n"
-    text += "\nKharidne ke liye product ka number bhejo (jaise 1)"
-    bot.send_message(message.chat.id, text)
+# --- Telegram Bot ---
+TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 
-@bot.message_handler(func=lambda m: m.text in products)
-def buy(message):
-    p = products[message.text]
-    bot.send_message(message.chat.id, f"Aapne {p['name']} ({p['price']}) select kiya!\nOrder ke liye @YourUsername pe contact karo.")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hello! Bot is Live 🔥\nSelling Bot Ready!")
 
-@bot.message_handler(func=lambda m: True)
-def all_msg(message):
-    bot.send_message(message.chat.id, "Products dekhne ke liye 🛍️ Products Dekho dabao")
+async def main_bot():
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    await application.run_polling()
 
-print("Bot Running...")
-bot.infinity_polling()
+if __name__ == "__main__":
+    # Start Flask in background
+    threading.Thread(target=run_flask).start()
+    # Start Telegram Bot
+    import asyncio
+    asyncio.run(main_bot())
