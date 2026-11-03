@@ -2,8 +2,7 @@ import telebot
 from telebot import types
 
 # --- Apna Bot Token Yaha Dalein ---
-BOT_TOKEN = "APNA_BOT_TOKEN_YAHAN_DALO"
-
+BOT_TOKEN = "9269676119:AAEMoPtmt3OAD8gZFSCnKanOql807jLOu2s"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # Sample products
